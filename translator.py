@@ -1,25 +1,18 @@
 import requests
+import sys
 from bs4 import BeautifulSoup
 
+
+args = sys.argv
 current_pair = ''
 current_lang = ''
 user_agent = 'Mozilla/5.0'
 support_languages_dict = {1: 'Arabic', 2: 'German', 3: 'English', 4: 'Spanish', 5: 'French',
                           6: 'Hebrew', 7: 'Japanese', 8: 'Dutch', 9: 'Polish', 10: 'Portuguese',
                           11: 'Romanian', 12: 'Russian', 13: 'Turkish'}
-
-print("Hello, you're welcome to the translator. Translator supports:")
-for key, value in zip(support_languages_dict.keys(), support_languages_dict.values()):
-    print(f'{key}. {value}')
-
-print('Type the number of your language:')
-my_language = int(input())
-
-print('Type the number of a language you want to translate to or \'0\' to translate to all languages:')
-language_to_translate = int(input())
-
-print('Type the word you want to translate:')
-word_to_translate = input()
+my_language = args[1]
+language_to_translate = args[2]
+word_to_translate = args[3]
 
 file = open(f'{word_to_translate}.txt', 'a', encoding='utf-8')
 if file:
@@ -27,10 +20,10 @@ if file:
 
 s = requests.Session()
 
-if language_to_translate != 0:
-    current_pair = f'{support_languages_dict.get(my_language).lower()}' \
-                   f'-{support_languages_dict.get(language_to_translate).lower()}'
-    current_lang = support_languages_dict.get(language_to_translate)
+if language_to_translate != 'all':
+    current_pair = f'{my_language}' \
+                   f'-{language_to_translate}'
+    current_lang = language_to_translate.capitalize()
 
     url = 'https://context.reverso.net/translation/' + current_pair + '/' + word_to_translate
     r = s.get(url, headers={'User-Agent': user_agent})
@@ -64,10 +57,10 @@ if language_to_translate != 0:
     print()
     file.write("\n")
 else:
-    for i in support_languages_dict.keys():
-        current_pair = f'{support_languages_dict.get(my_language).lower()}' \
-                       f'-{support_languages_dict.get(i).lower()}'
-        current_lang = support_languages_dict.get(i)
+    for language in support_languages_dict.values():
+        current_pair = f'{my_language}' \
+                       f'-{language.lower()}'
+        current_lang = language
 
         url = 'https://context.reverso.net/translation/' + current_pair + '/' + word_to_translate
         r = s.get(url, headers={'User-Agent': user_agent})
