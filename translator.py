@@ -14,11 +14,17 @@ my_language = args[1]
 language_to_translate = args[2]
 word_to_translate = args[3]
 
+if my_language.capitalize() not in support_languages_dict.values():
+    print(f"Sorry, the program doesn't support {my_language}")
+    sys.exit(0)
+if language_to_translate.capitalize() not in support_languages_dict.values() and language_to_translate != 'all':
+    print(f"Sorry, the program doesn't support {language_to_translate}")
+    sys.exit(0)
+
 file = open(f'{word_to_translate}.txt', 'a', encoding='utf-8')
 if file:
     file.truncate(0)
 
-s = requests.Session()
 
 if language_to_translate != 'all':
     current_pair = f'{my_language}' \
@@ -26,7 +32,16 @@ if language_to_translate != 'all':
     current_lang = language_to_translate.capitalize()
 
     url = 'https://context.reverso.net/translation/' + current_pair + '/' + word_to_translate
-    r = s.get(url, headers={'User-Agent': user_agent})
+    r = ''
+    try:
+        s = requests.Session()
+        r = s.get(url, headers={'User-Agent': user_agent})
+    except requests.exceptions.ConnectionError:
+        print('Something wrong with your internet connection')
+
+    if int(r.status_code) == 404:
+        print(f'Sorry, unable to find {word_to_translate}')
+        sys.exit(0)
 
     soup = BeautifulSoup(r.text, 'html.parser')
     word_translations_list = soup.find_all('a', class_='translation')
@@ -63,7 +78,16 @@ else:
         current_lang = language
 
         url = 'https://context.reverso.net/translation/' + current_pair + '/' + word_to_translate
-        r = s.get(url, headers={'User-Agent': user_agent})
+        r = ''
+        try:
+            s = requests.Session()
+            r = s.get(url, headers={'User-Agent': user_agent})
+        except requests.exceptions.ConnectionError:
+            print('Something wrong with your internet connection')
+
+        if int(r.status_code) == 404:
+            print(f'Sorry, unable to find {word_to_translate}')
+            sys.exit(0)
 
         soup = BeautifulSoup(r.text, 'html.parser')
         word_translations_list = soup.find_all('a', class_='translation')
